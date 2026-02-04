@@ -39,6 +39,20 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser }) => {
     }
   };
 
+  // --- ADDED: Delete Logic ---
+  const handleDeleteUser = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    
+    try {
+      await api.delete(`/auth/admin/users/${id}`);
+      toast.success('ተጠቃሚው ተሰርዟል'); // User deleted successfully
+      fetchUsers(pagination.currentPage, search); // Refresh table
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'መሰረዝ አልተቻለም';
+      toast.error(message);
+    }
+  };
+
   useEffect(() => {
     const delayDebounce = setTimeout(() => fetchUsers(1, search), 500);
     return () => clearTimeout(delayDebounce);
@@ -126,7 +140,10 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser }) => {
                       >
                         <Edit2 size={18} />
                       </button>
+                      
+                      {/* --- UPDATED: Click handler added here --- */}
                       <button 
+                        onClick={() => handleDeleteUser(user.id)}
                         className="p-3 text-slate-400 hover:text-red-500 hover:bg-white hover:shadow-md rounded-xl transition-all"
                       >
                         <Trash2 size={18} />
@@ -140,7 +157,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser }) => {
         )}
       </div>
 
-      {/* 📄 Pagination - More Modern */}
+      {/* 📄 Pagination */}
       {!loading && users.length > 0 && (
         <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
